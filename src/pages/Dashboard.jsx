@@ -1,24 +1,27 @@
 import { useState } from 'react';
 import { useMsal } from "@azure/msal-react";
+import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
     const { accounts } = useMsal();
     
-    // Fallbacks en caso de que MSAL esté cargando o se esté probando localmente sin login
-    const nombreUsuario = accounts[0]?.name?.toUpperCase() || 'DONNOVAN URRUTIA MUNILLA';
-    const correoUsuario = accounts[0]?.username || 'do.urrutia@duocuc.cl';
-    // En un caso real, los roles vienen en el ID Token (idTokenClaims.roles)
-    const rolesUsuario = accounts[0]?.idTokenClaims?.roles?.join(', ') || 'Usuario Autorizado';
+    // Extracción de datos del token
+    const nombreUsuario = accounts[0]?.name?.toUpperCase() || 'USUARIO';
+    const correoUsuario = accounts[0]?.username || 'correo@dominio.com';
+    const userRoles = accounts[0]?.idTokenClaims?.roles || [];
+    const rolesUsuario = userRoles.join(', ') || 'Sin roles asignados';
 
     const [apiResponse, setApiResponse] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Simulación de petición segura al BFF / API Gateway
+    // Función clave: Verifica si el usuario actual tiene el rol necesario
+    const tieneAcceso = (rolesPermitidos) => {
+        return rolesPermitidos.some(rol => userRoles.includes(rol));
+    };
+
     const simularPeticionSegura = () => {
         setIsLoading(true);
         setApiResponse(null);
-        
-        // Simulamos el delay de red
         setTimeout(() => {
             setApiResponse({
                 status: 200,
@@ -45,40 +48,73 @@ export default function Dashboard() {
                 </p>
             </div>
 
-            {/* Accesos Directos (Grid) */}
+            {/* Accesos Directos Dinámicos (Grid) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                {/* Card 1 */}
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Gestión de Atenciones</h3>
-                    <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
-                        Control de flujo, estados y asignación de boxes activos.
-                    </p>
-                    <a href="/reception" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        Ir a Atenciones →
-                    </a>
-                </div>
+                
+                {/* Visible para Admin y Operador (Recepcionista) */}
+                {tieneAcceso(['Admin', 'Operador']) && (
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column' }}>
+                        <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Gestión de Atenciones</h3>
+                        <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
+                            Control de flujo, estados y asignación de boxes activos.
+                        </p>
+                        <Link to="/reception" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            Ir a Atenciones →
+                        </Link>
+                    </div>
+                )}
 
-                {/* Card 2 */}
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Catálogo de Prestaciones</h3>
-                    <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
-                        Administración centralizada de servicios y valores.
-                    </p>
-                    <a href="/catalog" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        Ver Catálogo →
-                    </a>
-                </div>
+                {/* Visible para Admin y Operador (Recepcionista) */}
+                {tieneAcceso(['Admin', 'Operador']) && (
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column' }}>
+                        <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Catálogo de Prestaciones</h3>
+                        <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
+                            Administración centralizada de servicios y valores.
+                        </p>
+                        <Link to="/catalog" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            Ver Catálogo →
+                        </Link>
+                    </div>
+                )}
 
-                {/* Card 3 */}
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Reportería y KPIs</h3>
-                    <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
-                        Indicadores en tiempo real de demanda y ocupación.
-                    </p>
-                    <a href="/reports" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        Ver Reportes →
-                    </a>
-                </div>
+                {/* Visible solo para Admin */}
+                {tieneAcceso(['Admin']) && (
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column' }}>
+                        <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Reportería y KPIs</h3>
+                        <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
+                            Indicadores en tiempo real de demanda y ocupación.
+                        </p>
+                        <Link to="/reports" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            Ver Reportes →
+                        </Link>
+                    </div>
+                )}
+
+                {/* Visible para Admin y Auditor */}
+                {tieneAcceso(['Admin', 'Auditor']) && (
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', borderLeft: '4px solid #0284c7' }}>
+                        <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Auditoría de Eventos</h3>
+                        <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
+                            Registro de seguridad y trazabilidad clínico-administrativa.
+                        </p>
+                        <Link to="/audit" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            Ir a Auditoría →
+                        </Link>
+                    </div>
+                )}
+
+                {/* Visible solo para Paciente (Cliente) */}
+                {tieneAcceso(['Cliente']) && (
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', borderLeft: '4px solid #059669' }}>
+                        <h3 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1.15rem' }}>Mi Portal de Paciente</h3>
+                        <p style={{ margin: '0 0 1.5rem 0', color: '#64748b', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>
+                            Agende y revise sus horas médicas en la red.
+                        </p>
+                        <Link to="/patient-portal" style={{ color: '#0f766e', fontWeight: '600', textDecoration: 'none', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            Entrar al Portal →
+                        </Link>
+                    </div>
+                )}
             </div>
 
             {/* Información de Sesión */}
@@ -91,7 +127,9 @@ export default function Dashboard() {
                     </div>
                     <div>
                         <span style={{ fontWeight: '600', color: '#334155', fontSize: '0.95rem' }}>Roles (Claims): </span>
-                        <span style={{ color: '#64748b', fontSize: '0.95rem' }}>{rolesUsuario}</span>
+                        <span style={{ color: '#0f766e', fontSize: '0.95rem', fontWeight: '700', backgroundColor: '#ccfbf1', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                            {rolesUsuario}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -123,7 +161,6 @@ export default function Dashboard() {
                     {isLoading ? 'Conectando...' : 'Ejecutar Petición Segura'}
                 </button>
 
-                {/* Resultado de la simulación */}
                 {apiResponse && (
                     <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', color: '#166534', fontSize: '0.9rem', fontFamily: 'monospace', animation: 'fadeIn 0.3s ease-in-out' }}>
                         <div><strong>Status:</strong> {apiResponse.status} OK</div>
