@@ -9,7 +9,7 @@ export const msalConfig = {
         storeAuthStateInCookie: false, 
     }
 };
-
+ 
 export const loginRequest = {
     scopes: ["User.Read"] 
 };

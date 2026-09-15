@@ -57,6 +57,6 @@ export default function Login() {
                     Iniciar sesión con Microsoft
                 </button>
             </div>
-        </div>
+        </div> 
     );
 }

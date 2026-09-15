@@ -24,4 +24,4 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
     // Si pasó todas las pruebas, renderizamos la vista que solicitó
     return children;
-}
+} 

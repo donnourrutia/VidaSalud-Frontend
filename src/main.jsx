@@ -19,4 +19,4 @@ msalInstance.initialize().then(() => {
       </MsalProvider>
     </React.StrictMode>,
   )
-});
+}); 
